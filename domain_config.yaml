@@ -1,0 +1,39 @@
+# ── Domain Configuration ─────────────────────────────
+# This file defines project-specific rules that the refinement agent
+# uses to ask better questions and produce specs in your style.
+
+project_name: "My Product"
+
+ticket_structure:
+  - Background
+  - "Problem / Current behavior"
+  - Desired behavior
+  - Scope
+  - Out of scope
+  - "Technical notes (high level)"
+  - "Risks & impact"
+  - "Test plan / QA hints"
+  - "Acceptance criteria"
+
+user_personas:
+  - name: Admin
+    description: "Internal ops user with full platform access"
+  - name: End User
+    description: "External customer using mobile and web apps"
+  - name: Developer
+    description: "Internal engineer consuming APIs"
+
+platforms:
+  - Web (React)
+  - iOS (Swift)
+  - Android (Kotlin)
+  - REST API
+
+standards:
+  performance: "API p95 latency < 500ms"
+  security: "OWASP Top 10 compliance, no secrets in code"
+  accessibility: "WCAG 2.1 AA"
+  testing: "Unit + integration tests required for business logic"
+
+# 'bullet' or 'gherkin'
+acceptance_criteria_style: "bullet"
