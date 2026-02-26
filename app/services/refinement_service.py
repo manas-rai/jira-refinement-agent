@@ -96,8 +96,9 @@ async def run_agent_loop(
             )
 
             try:
+                clean_args = _clean_tool_args(tool_call.arguments)
                 result = await mcp_jira_client.call_tool(
-                    tool_call.name, tool_call.arguments
+                    tool_call.name, clean_args
                 )
             except Exception as e:
                 result = f"Error calling tool '{tool_call.name}': {e}"
@@ -140,6 +141,25 @@ def _assistant_message_to_dict(message) -> dict:
         ]
 
     return msg
+
+
+def _clean_tool_args(arguments: dict) -> dict:
+    """Clean tool call arguments before passing to MCP.
+
+    - Strips keys with None values (LLMs generate nulls for optional params)
+    - Unescapes double-escaped newlines in string values (\\\\n → \\n)
+    - This fixes Jira comments appearing as unformatted single-line text
+    """
+    clean = {}
+    for k, v in arguments.items():
+        if v is None:
+            continue
+        if isinstance(v, str):
+            # Fix double-escaped newlines from LLM output
+            v = v.replace("\\n", "\n")
+            v = v.replace("\\t", "\t")
+        clean[k] = v
+    return clean
 
 
 def _get_domain_config() -> DomainConfig:

@@ -2,8 +2,60 @@
 # This file defines project-specific rules that the refinement agent
 # uses to ask better questions and produce specs in your style.
 
-project_name: "My Product"
+project_name: "Cloud Waste Hunter"
 
+# ── Repository context ───────────────────────────────
+repo_url: "https://github.com/manas-rai/cloud-waste-hunter"
+
+tech_stack:
+  - "Python 3.12+ / FastAPI 0.126+"
+  - "SQLAlchemy (ORM) + PostgreSQL"
+  - "boto3 (AWS SDK)"
+  - "scikit-learn (Isolation Forest ML)"
+  - "pandas, numpy"
+  - "Next.js 14 / React / TypeScript / Tailwind CSS"
+  - "Docker"
+  - "uv (package manager)"
+
+architecture_notes: |
+  Monorepo with backend/ (Python FastAPI) and frontend/ (Next.js).
+  
+  Backend follows clean layered architecture:
+  1. API Layer (api/) — HTTP endpoints, request validation
+  2. Service Layer (services/) — Business logic orchestration
+  3. Repository Layer (repositories/) — Data access
+  4. Detection Layer (detection/) — ML algorithms (Isolation Forest)
+  5. Database Layer (database/postgres/) — Connection pool, sessions
+  6. Schemas (schemas/) — SQLAlchemy database tables
+  7. Models (models/) — Pydantic API request/response models
+
+  Key design: separation of concerns, centralized session management
+  via get_db(), safety-first execution (dry-run, approval, rollback).
+
+key_modules:
+  - name: "API"
+    path: "backend/app/api/"
+    description: "REST API endpoints (Presentation Layer)"
+  - name: "Services"
+    path: "backend/app/services/"
+    description: "Business logic orchestration"
+  - name: "Detection"
+    path: "backend/app/detection/"
+    description: "ML-powered waste detection algorithms (Isolation Forest)"
+  - name: "AWS Integration"
+    path: "backend/app/aws/"
+    description: "AWS SDK integration for resource management"
+  - name: "Safety"
+    path: "backend/app/safety/"
+    description: "Dry-run preview, manual approval, audit logging, 7-day rollback"
+  - name: "Repositories"
+    path: "backend/app/repositories/"
+    description: "Data access layer for PostgreSQL"
+  - name: "Frontend Dashboard"
+    path: "frontend/"
+    description: "Next.js React/TypeScript dashboard with Tailwind CSS"
+
+# ── Ticket structure ─────────────────────────────────
 ticket_structure:
   - Background
   - "Problem / Current behavior"
@@ -16,24 +68,24 @@ ticket_structure:
   - "Acceptance criteria"
 
 user_personas:
-  - name: Admin
-    description: "Internal ops user with full platform access"
-  - name: End User
-    description: "External customer using mobile and web apps"
+  - name: DevOps Engineer
+    description: "Manages AWS infrastructure and cost optimization"
+  - name: Engineering Manager
+    description: "Reviews cost reports and approves resource cleanup actions"
   - name: Developer
-    description: "Internal engineer consuming APIs"
+    description: "Internal engineer consuming APIs and extending detectors"
 
 platforms:
-  - Web (React)
-  - iOS (Swift)
-  - Android (Kotlin)
-  - REST API
+  - "Web (Next.js dashboard)"
+  - "REST API (FastAPI)"
+  - "AWS Cloud"
 
 standards:
   performance: "API p95 latency < 500ms"
-  security: "OWASP Top 10 compliance, no secrets in code"
-  accessibility: "WCAG 2.1 AA"
-  testing: "Unit + integration tests required for business logic"
+  security: "No AWS credentials in code, IAM least-privilege"
+  safety: "All destructive actions require dry-run + manual approval"
+  testing: "Unit + integration tests for business logic and detection algorithms"
+  rollback: "7-day rollback capability for all cleanup actions"
 
 # 'bullet' or 'gherkin'
 acceptance_criteria_style: "bullet"

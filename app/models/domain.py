@@ -11,11 +11,27 @@ class Persona(BaseModel):
     description: str = ""
 
 
+class RepoModule(BaseModel):
+    """A key module/directory in the repository."""
+    name: str
+    path: str = ""
+    description: str = ""
+
+
 class DomainConfig(BaseModel):
     """Project-specific configuration that the LLM uses as context."""
 
     project_name: str = "My Product"
 
+    # ── Repository context ─────────────────────────────
+    repo_url: str = Field(default="", description="GitHub/GitLab repo URL")
+    tech_stack: list[str] = Field(default_factory=list)
+    architecture_notes: str = Field(
+        default="", description="Free-text architecture overview"
+    )
+    key_modules: list[RepoModule] = Field(default_factory=list)
+
+    # ── Ticket structure ───────────────────────────────
     ticket_structure: list[str] = Field(
         default_factory=lambda: [
             "Background",

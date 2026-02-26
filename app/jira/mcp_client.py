@@ -69,28 +69,47 @@ class MCPJiraClient:
     def is_connected(self) -> bool:
         return self._session is not None
 
+    # Only expose tools the agent actually needs (reduces token overhead)
+    CORE_TOOLS = {
+        "jira_get_issue",
+        "jira_search",
+        "jira_create_issue",
+        "jira_update_issue",
+        "jira_add_comment",
+        "jira_transition_issue",
+        "jira_get_transitions",
+        "jira_get_project_issues",
+    }
+
     def get_tools(self) -> list[types.Tool]:
         """Return the list of available MCP tools."""
         return self._tools
 
     def get_tools_as_openai_functions(self) -> list[dict]:
-        """Convert MCP tool schemas to OpenAI function-calling format."""
+        """Convert MCP tool schemas to OpenAI function-calling format.
+
+        Only includes core tools needed for refinement to keep token
+        usage low (important for providers with small context limits).
+        Sanitizes schemas to remove optional properties that could cause
+        validation errors when LLMs generate null values.
+        """
         functions = []
         for tool in self._tools:
+            if tool.name not in self.CORE_TOOLS:
+                continue
+
+            params = {"type": "object", "properties": {}}
+            if tool.inputSchema:
+                params = _sanitize_schema(tool.inputSchema)
+
             func = {
                 "type": "function",
                 "function": {
                     "name": tool.name,
                     "description": tool.description or "",
+                    "parameters": params,
                 },
             }
-            if tool.inputSchema:
-                func["function"]["parameters"] = tool.inputSchema
-            else:
-                func["function"]["parameters"] = {
-                    "type": "object",
-                    "properties": {},
-                }
             functions.append(func)
         return functions
 
@@ -122,6 +141,28 @@ class MCPJiraClient:
         text = _extract_text(result)
         logger.debug("mcp_tool_result", tool=name, result_len=len(text))
         return text
+
+
+def _sanitize_schema(schema: dict) -> dict:
+    """Sanitize an MCP tool schema for OpenAI/Groq compatibility.
+
+    LLMs often generate null values for optional parameters, which fails
+    validation on providers like Groq. This removes non-required properties
+    from the schema so the LLM won't try to set them.
+    """
+    sanitized = dict(schema)
+    required = set(sanitized.get("required", []))
+    properties = sanitized.get("properties", {})
+
+    # Keep only required properties + commonly needed optional ones
+    if properties and required:
+        clean_props = {}
+        for key, value in properties.items():
+            if key in required:
+                clean_props[key] = value
+        sanitized["properties"] = clean_props
+
+    return sanitized
 
 
 def _extract_text(result: types.CallToolResult) -> str:

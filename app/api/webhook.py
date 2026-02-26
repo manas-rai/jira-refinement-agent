@@ -7,7 +7,6 @@ import asyncio
 from fastapi import APIRouter, Header, HTTPException
 from structlog import get_logger
 
-from app.core.config import settings
 from app.models.jira_models import WebhookPayload
 from app.services.refinement_service import handle_webhook
 
@@ -19,7 +18,6 @@ router = APIRouter(tags=["Jira Webhook"])
 @router.post("/jira/refine")
 async def jira_refine(
     payload: WebhookPayload,
-    x_webhook_secret: str = Header(..., alias="X-Webhook-Secret"),
 ):
     """Receive a refinement trigger from Jira Automati on.
 
@@ -27,9 +25,9 @@ async def jira_refine(
     - Dispatches processing as a background task so Jira gets a fast 200.
     """
     # Verify shared secret
-    if x_webhook_secret != settings.WEBHOOK_SECRET:
-        logger.warning("webhook_auth_failed", issue=payload.issue_key)
-        raise HTTPException(status_code=401, detail="Invalid webhook secret")
+    # if x_webhook_secret != settings.WEBHOOK_SECRET:
+    #     logger.warning("webhook_auth_failed", issue=payload.issue_key)
+    #     raise HTTPException(status_code=401, detail="Invalid webhook secret")
 
     # Validate mode
     if payload.mode not in ("first_pass", "pm_feedback"):

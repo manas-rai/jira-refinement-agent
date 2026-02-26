@@ -238,10 +238,30 @@ def _domain_context(config: DomainConfig) -> str:
         f"  - **{k}**: {v}" for k, v in config.standards.items()
     )
 
-    return f"""
+    context = f"""
 
 ## Project context: {config.project_name}
+"""
 
+    # Repo context (if configured)
+    if config.repo_url:
+        context += f"\n### Repository: {config.repo_url}\n"
+
+    if config.tech_stack:
+        tech = "\n".join(f"  - {t}" for t in config.tech_stack)
+        context += f"\n### Tech stack:\n{tech}\n"
+
+    if config.architecture_notes:
+        context += f"\n### Architecture:\n{config.architecture_notes}\n"
+
+    if config.key_modules:
+        modules = "\n".join(
+            f"  - **{m.name}** (`{m.path}`): {m.description}"
+            for m in config.key_modules
+        )
+        context += f"\n### Key modules:\n{modules}\n"
+
+    context += f"""
 ### Required ticket structure (use these as markdown headings):
 {sections}
 
@@ -255,6 +275,8 @@ def _domain_context(config: DomainConfig) -> str:
 
 ### Acceptance criteria style: {config.acceptance_criteria_style}
 """
+
+    return context
 
 
 def _json_schema_hint(mode: str) -> str:

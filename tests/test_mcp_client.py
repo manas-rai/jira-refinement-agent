@@ -54,8 +54,8 @@ class TestMCPJiraClient:
         client = MCPJiraClient()
 
         mock_tool = MagicMock()
-        mock_tool.name = "jira_list_projects"
-        mock_tool.description = "List all projects"
+        mock_tool.name = "jira_get_issue"  # Must be in CORE_TOOLS
+        mock_tool.description = "Get a Jira issue"
         mock_tool.inputSchema = None
 
         client._tools = [mock_tool]
